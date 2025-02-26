@@ -1,0 +1,52 @@
+defaults:
+- env: acdc_env
+- model: acdc_networks
+
+project_name: ACDC
+env_version: ACDC_Env
+num_steps: 32
+num_envs: 50
+update_epochs: 6
+num_minibatches: 60
+ppo_batch_size: 600
+use_amp: False
+total_timesteps: 100000000
+gamma: 0.99
+gae_lambda: 0.9
+clip_coef: 0.1
+clip_vloss: True
+norm_adv: True
+ent_coef: 0.05
+vf_coef: 0.3
+max_grad_norm: 0.5
+target_kl: null
+
+
+log_interval: 6
+eval_interval: 6
+seed: 666
+#k_fraction: 0.1
+budget: 32
+weight_decay: 0.001
+device: cuda
+
+optim:
+  name: adamw
+  lr: 0.0004
+  weight_decay: 0.0001
+  momentum: 0.9
+
+scheduler:
+  step_size: 2000     # (for StepLR) Decay every 1000 steps
+  gamma: 0.98         # (for StepLR) Multiply LR by gamma each step_size
+  T_max: 10000        # (for CosineAnnealingLR) Maximum number of iterations
+
+snapshot_dir: /*****path
+load_from_snapshot_base_dir: /*****path
+
+logging:
+  level: DEBUG
+
+hydra:
+  run:
+    dir: /*****path
