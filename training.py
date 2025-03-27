@@ -4,8 +4,7 @@ import time
 import os
 import torch.nn as nn
 from hydra.core.hydra_config import HydraConfig
-from rl.utils import eval_mode, set_seed_everywhere
-from collections import deque, defaultdict
+from collections import deque
 from omegaconf import OmegaConf
 from torch.utils.tensorboard import SummaryWriter
 from rl.acdc_env import ACDC_Env
@@ -17,34 +16,16 @@ import random
 import warnings
 warnings.filterwarnings('ignore')
 
-
-def get_optimizer(parameters, optimizer='adamw', lr=1e-3, weight_decay=5e-4, lr_momentum=0.9):
-    if optimizer == "adamw":
-        optimizer = torch.optim.AdamW(
-            parameters,
-            lr=lr,
-            weight_decay=weight_decay,
-        )
-    elif optimizer == "adam":
-        optimizer = torch.optim.Adam(
-            parameters,
-            lr=lr,
-            weight_decay=weight_decay,
-        )
-    elif optimizer == "sgd":
-        optimizer = torch.optim.SGD(
-            parameters,
-            lr=lr,
-            momentum=lr_momentum,
-            weight_decay=weight_decay,
-        )
-    return optimizer
-
+def set_seed_everywhere(seed):
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 
 class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-
 
 def get_data(config):
     return MRDataModule(config=config, dev_mode=config.dev_mode)
@@ -103,7 +84,7 @@ def main(cfg):
 
 def train(cfg, ac, envs, eval_envs, writer):
     parameters = filter(lambda p: p.requires_grad, ac.parameters())
-    optimizer = get_optimizer(parameters, optimizer=cfg.optim.name, lr=cfg.optim.lr, weight_decay=cfg.optim.weight_decay)
+    optimizer = torch.optim.AdamW(parameters, lr=cfg.optim.lr, weight_decay=cfg.optim.weight_decay)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.scheduler.step_size, gamma=cfg.scheduler.gamma)
 
     num_envs = cfg.num_envs
@@ -112,7 +93,7 @@ def train(cfg, ac, envs, eval_envs, writer):
     minibatch_size = int(cfg.ppo_batch_size // cfg.num_minibatches)
 
     global global_step
-    best_metric = {"ssim": 0.8555957}
+    best_metric = {"ssim": 0.0}
     device = torch.device(cfg.device)
     kmask_shape = (envs.act_dim,)
 
@@ -158,7 +139,6 @@ def train(cfg, ac, envs, eval_envs, writer):
             next_obs, reward, done, info = envs.step(action, training=True)
             next_obs_mt = torch.tensor(envs.get_remain_epi_lines()).to(device)
             episode_return += reward
-            # logging.debug(f'update:{update}, step:{step}, reward:{reward[0]}, done :{done[0]}')
             rewards[step].copy_(reward).to(device).view(-1)
             next_obs, next_done = next_obs.to(device), torch.Tensor(done).to(device)
 
@@ -298,8 +278,8 @@ def evaluate(ac, envs, writer=None, best_metric={"ssim": 0.0}, snapshot_dir=None
 
     while True:
         step += 1
-        with torch.no_grad(), eval_mode(ac):
-            cur_mask = envs.get_cur_mask_2d(eval_mode=True)
+        with torch.no_grad():
+            cur_mask = envs.get_cur_mask_2d()
             input_dict = {"kspace": obs, 'mt': obs_mt}
             action, _, _, _ = ac.get_action_and_value(input_dict, cur_mask, deterministic=True)
             # print(action)
