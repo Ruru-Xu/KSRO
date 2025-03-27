@@ -44,7 +44,7 @@ class ACDC_Env:
     def get_remain_epi_lines(self):
         return self.budget - self.counter
 
-    def get_cur_mask_2d(self, eval_mode=False):
+    def get_cur_mask_2d(self):
         cur_mask = ~self.accumulated_mask.bool()
         cur_mask = cur_mask.squeeze()
         return cur_mask[:, self.sampled_indices[0]:self.sampled_indices[1] + 1]
