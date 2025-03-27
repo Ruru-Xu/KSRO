@@ -74,15 +74,13 @@ class KspaceMaskedCategoricalActor_MT(Actor):
         if aux_shape is not None and mt_shape is not None:
             pass
         elif aux_shape is None and mt_shape is not None:
-            self.logits_net = Kspace_Net_MT(obs_dim, act_dim, hidden_sizes, activation,
+            self.logits_net = Kspace_Net_MT(act_dim,
                                             dataset,
                                             image_shape,
                                             dropout,
                                             pretrained,
                                             model_type,
                                             dropout_extra,
-                                            aux_shape,
-                                            using_init,
                                             feature_dim,
                                             mt_shape,
                                             )
@@ -138,15 +136,12 @@ class KspaceMaskedActorCritic_MT(nn.Module):
             pass
         elif aux_shape is None and mt_shape is not None:
 
-            self.v = Kspace_Net_Critic_MT(obs_dim, hidden_sizes, activation,
-                                          dataset,
+            self.v = Kspace_Net_Critic_MT(dataset,
                                           image_shape,
                                           dropout,
                                           pretrained,
                                           model_type_critic,
                                           dropout_extra,
-                                          aux_shape,
-                                          using_init,
                                           feature_dim,
                                           mt_shape)
         else:
