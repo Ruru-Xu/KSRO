@@ -80,18 +80,7 @@ class CBAM(nn.Module):
 
 class Kspace_Net_MT(nn.Module):
 
-    def __init__(self, obs_dim, act_dim, hidden_sizes, activation,
-                 dataset,
-                 image_shape,
-                 dropout,
-                 pretrained,
-                 model_type,
-                 dropout_extra,
-                 aux_shape,
-                 using_init,
-                 feature_dim,
-                 mt_shape,
-                 ):
+    def __init__(self, act_dim, dataset, image_shape, dropout, pretrained, model_type, dropout_extra, feature_dim, mt_shape):
         super().__init__()
         self.dataset = dataset
         self.image_shape = image_shape
@@ -178,17 +167,7 @@ class Kspace_Net_MT(nn.Module):
 
 class Kspace_Net_Critic_MT(nn.Module):
 
-    def __init__(self, obs_dim, hidden_sizes, activation,
-                 dataset,
-                 image_shape,
-                 dropout,
-                 pretrained,
-                 model_type,
-                 dropout_extra,
-                 aux_shape,
-                 using_init,
-                 feature_dim,
-                 mt_shape, ):
+    def __init__(self, dataset, image_shape, dropout, pretrained, model_type, dropout_extra, feature_dim, mt_shape):
         super().__init__()
 
         self.dataset = dataset
