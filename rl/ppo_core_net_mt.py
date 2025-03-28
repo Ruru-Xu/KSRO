@@ -80,15 +80,11 @@ class CBAM(nn.Module):
 
 class Kspace_Net_MT(nn.Module):
 
-    def __init__(self, act_dim, dataset, image_shape, dropout, pretrained, model_type, dropout_extra, feature_dim, mt_shape):
+    def __init__(self, act_dim, image_shape, dropout, feature_dim, mt_shape):
         super().__init__()
-        self.dataset = dataset
         self.image_shape = image_shape
         self.dropout = dropout
-        self.pretrained = pretrained
-        self.model_type = model_type
         self.act_dim = act_dim
-        self.dropout_extra = dropout_extra
         self.aux_shape = 0
         self.mt_shape = mt_shape
 
@@ -167,15 +163,11 @@ class Kspace_Net_MT(nn.Module):
 
 class Kspace_Net_Critic_MT(nn.Module):
 
-    def __init__(self, dataset, image_shape, dropout, pretrained, model_type, dropout_extra, feature_dim, mt_shape):
+    def __init__(self, image_shape, dropout, feature_dim, mt_shape):
         super().__init__()
 
-        self.dataset = dataset
         self.image_shape = image_shape
         self.dropout = dropout
-        self.pretrained = pretrained
-        self.model_type = model_type
-        self.dropout_extra = dropout_extra
         self.aux_shape = 0
         self.mt_shape = mt_shape
 
@@ -244,7 +236,8 @@ class Kspace_Net_Critic_MT(nn.Module):
             out = torch.cat((h, mt_vec.repeat(unet_features.shape[0], 1)), dim=-1)
         else:
             out = torch.cat((h, mt_vec), dim=-1)
-        return self.critic_layer(out).squeeze()
+        value = self.critic_layer(out).squeeze()
+        return value
 
 
 def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
