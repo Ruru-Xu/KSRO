@@ -8,9 +8,8 @@ class ACDCDataset(MRDataset):
         self,
         config: argparse.ArgumentParser,
         mode: str,
-        dev_mode: bool = False,
     ):
-        super().__init__(config=config, mode=mode, dev_mode=dev_mode)
+        super().__init__(config=config, mode=mode)
 
     def __getitem__(self, index):
         assert self.mode in self.metadata_by_mode
