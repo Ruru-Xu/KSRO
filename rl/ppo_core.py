@@ -67,25 +67,9 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
 
 class KspaceMaskedCategoricalActor_MT(Actor):
 
-    def __init__(self, obs_dim, act_dim, hidden_sizes, activation, dataset, image_shape, dropout,
-                 pretrained, model_type, dropout_extra, aux_shape, using_init, feature_dim,
-                 mt_shape):
+    def __init__(self, act_dim, image_shape, dropout, feature_dim, mt_shape):
         super().__init__()
-        if aux_shape is not None and mt_shape is not None:
-            pass
-        elif aux_shape is None and mt_shape is not None:
-            self.logits_net = Kspace_Net_MT(act_dim,
-                                            dataset,
-                                            image_shape,
-                                            dropout,
-                                            pretrained,
-                                            model_type,
-                                            dropout_extra,
-                                            feature_dim,
-                                            mt_shape,
-                                            )
-        else:
-            raise NotImplementedError("Not supported")
+        self.logits_net = Kspace_Net_MT(act_dim, image_shape, dropout, feature_dim, mt_shape)
 
     def _distribution(self, obs, mask):
         logits = self.logits_net(obs)
@@ -97,55 +81,13 @@ class KspaceMaskedCategoricalActor_MT(Actor):
 
 class KspaceMaskedActorCritic_MT(nn.Module):
 
-    def __init__(self,
-                 observation_space,
-                 action_space,
-                 hidden_sizes=(64, 64),
-                 activation=nn.Tanh,
-                 dataset='cifar10',
-                 image_shape=[32, 32],
-                 dropout=0.0,
-                 pretrained=False,
-                 model_type='resnet50',
-                 model_type_critic='resnet50',
-                 dropout_extra=False,
-                 aux_shape=None,
-                 using_init=False,
-                 feature_dim=50,
-                 mt_shape=256,
-                 ):
+    def __init__(self, action_space, image_shape, dropout=0.0, feature_dim=50, mt_shape=256):
 
         super().__init__()
         self._cur_mask = None
 
-        obs_dim = observation_space
-
-        self.pi = KspaceMaskedCategoricalActor_MT(obs_dim, action_space.n, hidden_sizes, activation,
-                                                  dataset,
-                                                  image_shape,
-                                                  dropout,
-                                                  pretrained,
-                                                  model_type,
-                                                  dropout_extra,
-                                                  aux_shape,
-                                                  using_init,
-                                                  feature_dim,
-                                                  mt_shape)
-
-        if aux_shape is not None and mt_shape is not None:
-            pass
-        elif aux_shape is None and mt_shape is not None:
-
-            self.v = Kspace_Net_Critic_MT(dataset,
-                                          image_shape,
-                                          dropout,
-                                          pretrained,
-                                          model_type_critic,
-                                          dropout_extra,
-                                          feature_dim,
-                                          mt_shape)
-        else:
-            raise NotImplementedError("Not supported")
+        self.pi = KspaceMaskedCategoricalActor_MT(action_space.n, image_shape, dropout, feature_dim, mt_shape)
+        self.v = Kspace_Net_Critic_MT(image_shape, dropout, feature_dim, mt_shape)
 
     def get_action_and_value(self, obs, mask, a=None, deterministic=False):
 
