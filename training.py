@@ -28,7 +28,7 @@ class Namespace:
         self.__dict__.update(kwargs)
 
 def get_data(config):
-    return MRDataModule(config=config, dev_mode=config.dev_mode)
+    return MRDataModule(config=config)
 
 def randomize_seed():
     seed = int(time.time()) % (2**32 - 1)
@@ -343,21 +343,13 @@ def load_snapshot(model, load_from_snapshot_base_dir):
 def prepare_train_envs(cfg, train_loader):
     observation_space = tuple(cfg.env.observation_space)
     print(cfg.env)
-    envs = ACDC_Env(train_loader, observation_space=observation_space, device=cfg.device, fixed_budget=cfg.env.train_fixed_budget,
-                    scale_reward=cfg.env.scale_reward, sampled_indices=cfg.env.sampled_indices,
-                    reward_mode=cfg.env.reward_mode, srange=cfg.env.srange, delay_step=cfg.env.delay_step)
+    envs = ACDC_Env(train_loader, observation_space=observation_space, device=cfg.device)
     return envs
 
 
 def prepare_evaluate_envs(cfg, val_loader):
     observation_space = cfg.env.observation_space
-    envs = ACDC_Env(val_loader, observation_space=observation_space, device=cfg.device,
-                    eval=True, fixed_budget=cfg.env.eval_fixed_budget,
-                    scale_reward=cfg.env.scale_reward,
-                    sampled_indices=cfg.env.sampled_indices,
-                    reward_mode=cfg.env.reward_mode, srange=cfg.env.srange,
-                    delay_step=cfg.env.delay_step,
-                    )
+    envs = ACDC_Env(val_loader, observation_space=observation_space, device=cfg.device)
     return envs
 
 
