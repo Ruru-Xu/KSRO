@@ -9,11 +9,9 @@ class MRDataModule(pl.LightningDataModule):
     def __init__(
         self,
         config: argparse.ArgumentParser,
-        dev_mode: bool,
     ):
         super().__init__()
         self.config = config
-        self.dev_mode = dev_mode
 
         if self.config.use_weighted_sampler:
             assert Path(self.config.train_sampler_filename).is_file()
@@ -29,8 +27,8 @@ class MRDataModule(pl.LightningDataModule):
         self.setup()
 
     def setup(self, stage=None):
-        self.train_dataset = ACDCDataset(config=self.config, mode="train_recon", dev_mode=self.dev_mode)
-        self.val_dataset = ACDCDataset(config=self.config, mode="val_recon", dev_mode=self.dev_mode)
+        self.train_dataset = ACDCDataset(config=self.config, mode="train_recon")
+        self.val_dataset = ACDCDataset(config=self.config, mode="val_recon")
 
     def train_dataloader(self):
         sampling_dict = dict(shuffle=True)
