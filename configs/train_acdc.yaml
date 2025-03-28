@@ -1,9 +1,4 @@
-defaults:
-- env: acdc_env
-- model: acdc_networks
-
 project_name: ACDC
-env_version: ACDC_Env
 num_steps: 32
 num_envs: 50
 update_epochs: 6
@@ -25,7 +20,6 @@ target_kl: null
 log_interval: 6
 eval_interval: 6
 seed: 666
-#k_fraction: 0.1
 budget: 32
 weight_decay: 0.001
 device: cuda
@@ -41,12 +35,37 @@ scheduler:
   gamma: 0.98         # (for StepLR) Multiply LR by gamma each step_size
   T_max: 10000        # (for CosineAnnealingLR) Maximum number of iterations
 
-snapshot_dir: /*****path
-load_from_snapshot_base_dir: /*****path
+snapshot_dir: /*******/output
+load_from_snapshot_base_dir: None
 
 logging:
   level: DEBUG
 
 hydra:
   run:
-    dir: /*****path
+    dir: /*******/output/${now:%Y.%m.%d}/${now:%H%M%S}_${project_name}
+
+
+model:
+  _target_: rl.ppo_core.KspaceMaskedActorCritic_MT
+  action_space: ???
+  image_shape: ${env.image_shape}
+  dropout: 0.0
+  feature_dim: 256
+  mt_shape: [ 256 ]
+
+
+
+env:
+  envname: acdc_env
+  val_shuffle: False
+  num_workers: 3
+  image_shape: [ 256, 256 ]
+  batch_size: ???
+  val_batch_size: 80
+  observation_space: [ 1, 256, 256 ]
+  use_weighted_sampler: True
+  datadir: /*******generated_files
+  split_csv_file: /*******/metadata_acdc.csv
+  train_sampler_filename: /*******/meta_data.p
+
