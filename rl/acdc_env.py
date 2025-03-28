@@ -1,11 +1,7 @@
 import fastmri
 import torch
-import numpy as np
 from pytorch_msssim import ssim as py_msssim
-from torch.utils.data import DataLoader
-import ast
 from rl.calculate_lesion_ssim import calculate_lesion_ssim, compute_lesion_priority_kspace
-import matplotlib.pyplot as plt
 
 class Namespace:
     def __init__(self, **kwargs):
@@ -13,32 +9,20 @@ class Namespace:
 
 class ACDC_Env:
 
-    def __init__(self, data_loader, observation_space=(1, 256, 256), device='cuda',
-                 k_fraction=0.1, eval=False, fixed_budget=False, sampled_indices=[0, 255],
-                 scale_reward=True, reward_mode=10, srange=[0, 255], delay_step=2,
-                 evaluation_only=False, budget=32):
-        # Environment properties and initialization
+    def __init__(self, data_loader, observation_space, device='cuda', budget=32):
+
         self.state = 0
         self.done = False
         self.data_loader = data_loader
-        self.data_loader_iter = iter(self.data_loader)
-        self.sampled_indices = sampled_indices
         self.observation_space = observation_space
-        self.action_space = Namespace(n=sampled_indices[1] - sampled_indices[0] + 1)
+        self.data_loader_iter = iter(self.data_loader)
+        self.action_space = Namespace(n=256)
         self.act_dim = self.action_space.n
         self.num_envs = data_loader.batch_size
         self.device = device
-        self.k_fraction = k_fraction
-        self.eval = eval
-        self.fixed_budget = fixed_budget
-        self.scale_reward = scale_reward
-        self.reward_mode = reward_mode
         self.previous_ssim_lesion = None
         self.previous_mse_lesion = None
         self.previous_ssim_global = None
-        self.delay_step = delay_step
-        self.srange = srange
-        self.evaluation_only = evaluation_only
         self.budget = budget
 
     def get_remain_epi_lines(self):
@@ -47,7 +31,7 @@ class ACDC_Env:
     def get_cur_mask_2d(self):
         cur_mask = ~self.accumulated_mask.bool()
         cur_mask = cur_mask.squeeze()
-        return cur_mask[:, self.sampled_indices[0]:self.sampled_indices[1] + 1]
+        return cur_mask
 
     def factory_reset(self):
         self.data_loader_iter = iter(self.data_loader)
